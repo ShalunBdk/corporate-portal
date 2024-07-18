@@ -3,10 +3,9 @@ stages:
 
 stage_build:
   stage: build
-  image: ubuntu:20.04
+  image: python:3
   tags:
     - gitlab
   script:
-    - apt install python3
     - pip install flask, psycopg2
     - python app.py
