@@ -6,4 +6,5 @@ def test_app():
     assert response.status_code == 200
     response = app.test_client().get('/')
     assert response.status_code == 200
+    assert 'Корпоративный портал' in response.data.decode('utf-8')
 
