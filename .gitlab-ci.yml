@@ -7,5 +7,6 @@ stage_build:
   tags:
     - gitlab
   script:
-    - pip install python, flask, psycopg2
+    - apt install python
+    - pip install flask, psycopg2
     - python app.py
