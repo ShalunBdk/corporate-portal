@@ -3,16 +3,10 @@ on:
   push:
 jobs:
   build-test:
-    name: Test context
-    runs-on: ubuntu-latest
+    name: Test site
+    runs-on: python:3.11
     steps:
-      - name: Display event name
-        run: echo ${{ gitverse.event_name }}
-      - name: Display Workflow
-        run: echo ${{ gitverse.workflow }}
-      - name: Display repository name
-        run: echo ${{ gitverse.Repository}}
-      - name: Display repository owner
-        run: echo ${{ gitverse.repository_owner }}
-      - name: Display actor
-        run: echo ${{ gitverse.actor }}
+      - name: install pip
+        run: pip install flask psycopg2 dotenv pytest
+      - name: check app.py
+        run: python test_app.py
