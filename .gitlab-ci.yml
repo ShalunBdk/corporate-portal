@@ -5,7 +5,7 @@ stage_build:
   stage: build
   image: python:3
   tags:
-    - gitlab
+    - gitlab-server
   script:
     - pip install flask psycopg2 pytest
     - python test_app.py
