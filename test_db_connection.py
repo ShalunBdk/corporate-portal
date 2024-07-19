@@ -11,4 +11,4 @@ try:
     cur.close()
     conn.close()
 except Exception as e:
-    print("Failed to connect to the database:", e)
+    print("Failed to connect to the database:", e) 

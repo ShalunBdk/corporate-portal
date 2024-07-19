@@ -1,4 +1,4 @@
-name: Демонстрация GitVerse CI/CD
+name: Тест корп. портала
 on:
   push:
 jobs:
