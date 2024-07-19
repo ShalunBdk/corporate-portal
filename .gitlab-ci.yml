@@ -8,5 +8,5 @@ stage_build:
     - gitlab-server
   script:
     - cp $ENV_FILE .env
-    - pip install flask psycopg2 pytest dotenv
+    - pip install flask psycopg2 pytest python-dotenv
     - python test_app.py
