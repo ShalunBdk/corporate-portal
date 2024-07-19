@@ -1,12 +1,20 @@
 from flask import Flask, jsonify, send_from_directory
 import psycopg2
+from db_cred import *
+import os
+from dotenv import load_dotenv
 
+load_dotenv()
+dbname = os.getenv('dbname')
+user = os.getenv('user')
+password = os.getenv('password')
+host = os.getenv('host')
 app = Flask(__name__)
 
 def get_employee_hierarchy():
     try:
         conn = psycopg2.connect(
-            "dbname=Users user=shalin-ar password=123QshI098 host=localhost port=5432"
+            f"dbname= {dbname} user={user} password={password} host={host} port=5432"
         )
         cur = conn.cursor()
         cur.execute("""
@@ -43,9 +51,6 @@ def get_employee_hierarchy():
         cur.close()
         conn.close()
 
-        print("Query successful. Number of rows fetched:", len(rows))
-        print("Sample row:", rows[0] if rows else "No rows")
-
         def build_tree(data, manager='None'):
             tree = {"name": manager, "relationship": "Работает", "email": "", "title": "", "children": []}
             for row in data:
@@ -66,7 +71,6 @@ def get_employee_hierarchy():
             return tree["children"] if tree["children"] else []
 
         hierarchy = build_tree(rows)
-        print("Hierarchy built. Sample hierarchy:", hierarchy[:5] if hierarchy else "No hierarchy")
         return hierarchy
     except Exception as e:
         print("Failed to execute query:", e)
