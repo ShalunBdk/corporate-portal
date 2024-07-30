@@ -3,6 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <script src="https://yastatic.net/s3/passport-sdk/autofill/v1/sdk-suggest-token-with-polyfills-latest.js"></script>
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
     <title>Корпоративный портал</title>
     <style>
         /* Reset styles to remove default margins and paddings */
@@ -33,8 +37,9 @@
             align-items: center;
         }
         .menu {
+            padding-top: 64px;
             display: flex;
-            height: calc(100% - 50px); /* Height minus top-nav */
+            height: calc(100%); /* Height minus top-nav */
         }
         .sidebar {
             width: 250px;
@@ -44,8 +49,7 @@
         }
         .iframe-container {
             flex: 1;
-            overflow: hidden;
-            padding: 0;
+            overflow: hidden;     
             box-sizing: border-box;
         }
         iframe {
@@ -60,26 +64,115 @@
     </style>
 </head>
 <body>
-    <!-- Top navigation bar -->
-    <div class="top-nav">
-        <div class="left">
-            <!-- Logo or title -->
-            <h2>Корпоративный портал</h2>
-        </div>
-        <div class="centre time"><span id="current-time"></span></div>
-        <div class="right">
-            <!-- User authentication -->
-            <div>Авторизация</div>
-        </div>
-    </div>
+    <script type="text/javascript">
+        function getCookie(name) {
+            const value = `; ${document.cookie}`;
+            const parts = value.split(`; ${name}=`);
+            if (parts.length === 2) return parts.pop().split(';').shift();
+        }
 
+        function displayUserInfo(data) {
+            document.querySelector('.login-button').style.display = 'none';
+            const profileDiv = document.querySelector('.profile');
+            profileDiv.querySelector('.avatar').style.backgroundImage = 'url(https://avatars.yandex.net/get-yapic/' + data.default_avatar_id + '/islands-middle)';
+
+            // Извлечение фамилии, имени и отчества
+             // Извлечение фамилии, имени и отчества
+            const names = data.real_name.split(' ');
+            let displayName = names[2] + ' ' + names[0][0] + '.';
+            if (names.length > 2) {
+                displayName += names[1][0] + '.';
+            }
+
+            profileDiv.querySelector('.profile-name').textContent = displayName;
+            profileDiv.style.display = 'flex';
+        }
+
+        window.onload = function() {
+            var accessToken = getCookie('access_token');
+            if (accessToken) {
+                // Попытка получить данные из localStorage
+                let cachedData = localStorage.getItem('user_info');
+                let cacheTimestamp = localStorage.getItem('cache_timestamp');
+                const cacheExpiry = 5 * 60 * 1000; // Кэш действителен 5 минут
+
+                const now = new Date().getTime();
+
+                if (cachedData && cacheTimestamp && (now - cacheTimestamp < cacheExpiry)) {
+                    displayUserInfo(JSON.parse(cachedData));
+                } else {
+                    fetch('/user_info', {
+                        headers: {
+                            'Authorization': 'OAuth ' + accessToken
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.error) {
+                            console.error('Error fetching user info:', data.error);
+                            document.querySelector('.login-button').style.display = 'block';
+                            document.querySelector('.profile').style.display = 'none';
+                        } else {
+                            // Кэширование данных в localStorage
+                            localStorage.setItem('user_info', JSON.stringify(data));
+                            localStorage.setItem('cache_timestamp', now);
+                            displayUserInfo(data);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error fetching user info:', error);
+                        document.querySelector('.login-button').style.display = 'block';
+                        document.querySelector('.profile').style.display = 'none';
+                    });
+                }
+            } else {
+                document.querySelector('.login-button').style.display = 'block';
+                document.querySelector('.profile').style.display = 'none';
+            }
+        }
+
+        function Login() {
+            window.location.href = "https://oauth.yandex.ru/authorize?response_type=code&client_id=b18e232b89424dd7ae7b4d65cab1e070";
+        }
+
+        function Logout() {
+            document.cookie = "access_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+            localStorage.removeItem('user_info');
+            localStorage.removeItem('cache_timestamp');
+            window.location.reload();
+        }
+    </script>
+    <!-- Top navigation bar -->
+    <header>
+        <div class="header-inner clearfix">
+        <div class="header-logo">
+            <a href="http://localhost:5000/"><img alt="logo" src="/static/logo.png"></a>
+        </div>
+        <form action="" method="get" class="header-search">
+            <div class="search">
+            <input type="search" name="search" placeholder="Искать сотрудника, новости, прочее...">
+            <button type="submit" class="material-icons"><span class="material-symbols-outlined">search</span></button>
+            </div>
+        </form>
+        <div class="header-menu">
+            <ul class="ul-base">
+            <li><button class="feedback-button">Обратная связь</button></li>
+            <li class="login-button"><a href="#" onclick="Login()">Login</a></li>
+            <li><div class="profile" onclick="Logout()"><div class="avatar"></div><span class="profile-name">UserName</span></div></li>
+            <li><div class="help-button-bg"><button class="help-button">?</button></div></li>
+            </ul>
+        </div>
+        </div>
+    </header>
+
+     <!-- <div id="user-info"><a href="https://oauth.yandex.ru/authorize?response_type=code&client_id=b18e232b89424dd7ae7b4d65cab1e070">Авторизация</a></div> -->
     <!-- Main content area -->
     <div class="menu">
         <!-- Sidebar menu -->
         <div class="sidebar">
             <h3>Меню</h3>
             <ul>
-                <li><a href="#" onclick="loadIndexPage()">Открыть Index.html</a></li>
+                <li><a href="#" onclick="loadIndexPage()">Главная</a></li>
                 <!-- Добавить другие пункты меню при необходимости -->
             </ul>
         </div>
@@ -90,29 +183,14 @@
         </div>
     </div>
 
-    <!-- JavaScript для загрузки index.html -->
-    <script>
-        function loadIndexPage() {
-            document.getElementById('content-iframe').src = 'index.html';
-        }
-    </script>
-    </div>
-
     <!-- Scripts -->
-    <script>
-        // Function to display current time in the top navigation bar
-        function updateTime() {
-            const now = new Date();
-            const hours = now.getHours().toString().padStart(2, '0');
-            const minutes = now.getMinutes().toString().padStart(2, '0');
-            document.getElementById('current-time').textContent = `${hours}:${minutes}`;
-        }
-        // Обновляем время каждую секунду
-        setInterval(updateTime, 1000);
-        
+    <script>    
         // Функция для загрузки index.html в iframe
         function loadIndexPage() {
             document.getElementById('content-iframe').src = 'index.html';
+        }
+        function loadAuthPage() {
+            document.getElementById('content-iframe').src = 'auth';
         }
         loadIndexPage();
     </script>

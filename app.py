@@ -1,15 +1,26 @@
-from flask import Flask, jsonify, send_from_directory
+from flask import Flask, request, jsonify, send_from_directory, redirect, make_response
+from flask_caching import Cache
+from requests import post
 import psycopg2
 from db_cred import *
 import os
 from dotenv import load_dotenv
+from urllib.parse import urlencode
+import requests
 
 load_dotenv()
+
 dbname = os.getenv('dbname')
 user = os.getenv('user')
 password = os.getenv('password')
 host = os.getenv('host')
-app = Flask(__name__)
+
+client_id = 'b18e232b89424dd7ae7b4d65cab1e070'
+client_secret = '24959c0211e84122b941dbd55ae40eb6'
+baseurl = 'https://oauth.yandex.ru/'
+
+app = Flask(__name__, static_url_path='/static')
+cache = Cache(app, config={'CACHE_TYPE': 'simple'})  # Используем простой кэш
 
 def get_employee_hierarchy():
     try:
@@ -83,11 +94,53 @@ def employees_hierarchy():
 
 @app.route('/')
 def home():
+    access_token = request.cookies.get('access_token')
     return send_from_directory('', 'home.html')
+    
 
 @app.route('/index.html')
 def index():
     return send_from_directory('', 'index.html')
+
+@app.route('/auth')
+def auth():
+    return send_from_directory('', 'auth.html')
+
+@app.route('/auth_token')
+def auth_token():
+    if request.args.get('code', False):
+        print(request.args)
+        print(request.data)
+        data = {
+            'grant_type': 'authorization_code',
+            'code': request.args.get('code'),
+            'client_id': client_id,
+            'client_secret': client_secret
+        }
+        data = urlencode(data)
+        response = post(baseurl + "token", data=data)
+        response_data = response.json()
+        access_token = response_data.get('access_token')
+        if access_token:
+            # Создаем ответ с куки и перенаправляем на главную страницу
+            resp = make_response(redirect('/'))
+            resp.set_cookie('access_token', access_token)
+            return resp
+        else:
+            return jsonify(response_data)
+    else:
+        return redirect(baseurl + "authorize?response_type=code&client_id={}".format(client_id))
+
+@cache.cached(timeout=300, key_prefix='user_info')  # Кэшируем запрос на 5 минут
+@app.route('/user_info')
+def user_info():
+    access_token = request.cookies.get('access_token')
+    if access_token:
+        response = requests.get('https://login.yandex.ru/info?format=json', headers={
+            'Authorization': 'OAuth ' + access_token
+        })
+        return jsonify(response.json())
+    return jsonify({'error': 'No access token'}), 401
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
