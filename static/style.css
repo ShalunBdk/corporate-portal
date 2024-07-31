@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter&family=Nanum+Gothic:wght@400;700&display=swap');
 /* -----------------------------------------------------
   Body
 -------------------------------------------------------- */
@@ -229,6 +230,131 @@ body {
   header .header-menu ul li a:hover {
     opacity: 0.6;
     text-decoration: none;
+  }
+  main {
+    height: 100%;
+    padding-top: 64px;
+    display: flex;
+  }
+  .sidebar {
+    width: 300px;
+    color: #002F55;
+    padding: 20px;
+  }
+  
+  .sidebar ul li:hover {
+    opacity: 0.6;
+    text-decoration: none;
+  }
+  
+  .sidebar ul li a:hover {
+    opacity: 0.6;
+    text-decoration: none;
+  }
+  
+  .sidebar ul li a {
+    font-family: Inter;
+    font-size: 17px;
+    font-weight: 400;
+    line-height: 20.57px;
+    text-align: center; 
+    color: #002F55;
+    display: flex;
+    align-items: center;
+    margin-top: 15px;
+  }
+  
+  .sidebar ul li img{
+    margin-right: 10px;
+  }
+
+  .banners-slider {
+    max-width: 800px;
+    padding: 20px;
+    box-sizing: content-box;
+  }
+  
+  .banners-static {
+    display: flex;
+    padding: 20px;
+  }
+  
+  .banners-static h1 {
+    font-family: Inter;
+    font-size: 20px;
+    font-weight: 400;
+    line-height: 24.2px;
+    text-align: left;
+    color: #002F55;
+  }
+  
+  .banners-static span {
+    font-family: Inter;
+    font-size: 16px;
+    font-weight: 400;
+    line-height: 19.36px;
+    text-align: left;
+    color: #002F55;
+  }
+  
+  .banner1 {
+    position: relative;
+    background: #87CEFA;
+    border-radius: 16px;
+    max-width: 30%;
+    max-height: 90%;
+    padding: 12px;
+    margin-right: 10px;
+  }
+  
+  .banner1:hover, .banner2:hover, .banner3:hover {
+    background: #AFDAFC;
+    cursor: pointer;
+  }
+  
+  .banners-static .banner1 img{
+    position: absolute;
+    padding: 12px;
+    right: 0px;
+    bottom: 0px;
+  }
+  
+  .banner2 {
+    position: relative;
+    background: #87CEFA;
+    border-radius: 16px;
+    max-width: 30%;
+    max-height: 90%;
+    padding: 12px;
+    margin-right: 10px;
+  }
+  
+  .banners-static .banner2 img{
+    position: absolute;
+    padding: 12px;
+    right: 0px;
+    bottom: 0px;
+  }
+  
+  .banner3 {
+    position: relative;
+    background: #87CEFA;
+    border-radius: 16px;
+    max-width: 30%;
+    max-height: 90%;
+    padding: 12px;
+    margin-right: 10px;
+  }
+  
+  .banners-static .banner3 img{
+    position: absolute;
+    padding: 12px;
+    right: 0px;
+    bottom: 0px;
+  }
+
+  .content {
+    display: flex;
   }
   @media only screen and (max-width: 1024px) {
     header .header-categories {
