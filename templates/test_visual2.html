@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Organizations</title>
+    <link rel="stylesheet" href="/static/css/styles.css">
+    <style>
+        #container {
+            display: flex;
+            gap: 20px;
+        }
+        #organization-list {
+            width: 25%;
+            overflow-y: auto;
+        }
+        iframe {
+            flex-grow: 1;
+            height: 100vh;
+            border: none;
+        }
+        ul {
+            list-style-type: none;
+            padding-left: 20px;
+        }
+        li {
+            cursor: pointer;
+            margin: 5px 0;
+        }
+        ul ul {
+            display: none;
+        }
+        .expanded > ul {
+            display: block;
+        }
+        #search-container {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        #search-input {
+            width: 60%;
+            padding: 10px;
+            font-size: 1em;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        #search-button {
+            padding: 10px 20px;
+            font-size: 1em;
+            border: none;
+            border-radius: 8px;
+            background-color: #007BFF;
+            color: white;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+        #search-button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <h1>Organizations</h1>
+    
+    <div id="search-container">
+        <input type="text" id="search-input" placeholder="Search by organization, department or employee">
+        <button id="search-button">Search</button>
+    </div>
+    
+    <div id="container">
+        <ul id="organization-list"></ul>
+        <iframe id="department-frame" src=""></iframe>
+    </div>
+
+    <script>
+        const companyMapping = {
+            "Аэросервис": ["ООО «Аэросервис»", "ООО \"Аэросервис\"", "Аэросервис", "Аэросервис ООО"],
+            "УМ": ["Тион УМ АО", "АО \"Тион УМ\"", "АО Тион УМ", "Тион УМ", "АО «Тион Умный Микроклимат»", "АО \"ТИОН УМ\""],
+            "ХК": ["АО \"ХК Тион\"", "Холдинговая Компания", "ХК Тион АО", "ХК Тион", "АО ХК Тион"],
+            "Инжиниринг": ["ООО Инжиниринг", "Инжиниринг", "Тион Инжиниринг ООО"]
+        };
+
+        function normalizeCompanyName(name) {
+            for (const [normalizedName, variations] of Object.entries(companyMapping)) {
+                if (variations.includes(name)) {
+                    return normalizedName;
+                }
+            }
+            return name;
+        }
+
+        document.addEventListener("DOMContentLoaded", function() {
+            let data = [];
+            let filteredData = [];
+
+            function displayData() {
+                const organizationList = document.getElementById('organization-list');
+                organizationList.innerHTML = '';
+
+                const organizations = {};
+                filteredData.forEach(emp => {
+                    const company = normalizeCompanyName(emp.company);
+                    if (!company.trim()) {
+                        return;
+                    }
+                    if (!organizations[company]) {
+                        organizations[company] = new Set();
+                    }
+                    organizations[company].add(emp.department);
+                });
+
+                Object.entries(organizations).forEach(([company, departments]) => {
+                    const companyItem = document.createElement('li');
+                    companyItem.textContent = company;
+
+                    const departmentList = document.createElement('ul');
+                    departments.forEach(department => {
+                        const departmentItem = document.createElement('li');
+                        departmentItem.textContent = department;
+                        departmentItem.onclick = () => {
+                            const iframe = document.getElementById('department-frame');
+                            iframe.src = `/department?company=${encodeURIComponent(company)}&department=${encodeURIComponent(department)}`;
+                        };
+                        departmentList.appendChild(departmentItem);
+                    });
+
+                    companyItem.appendChild(departmentList);
+                    companyItem.onclick = function () {
+                        this.classList.toggle('expanded');
+                    };
+                    organizationList.appendChild(companyItem);
+                });
+            }
+
+            fetch('/api/employees')
+                .then(response => response.json())
+                .then(fetchedData => {
+                    data = fetchedData;
+                    filteredData = data;
+                    displayData();
+                })
+                .catch(error => console.error('Ошибка загрузки данных:', error));
+
+            document.getElementById('search-button').addEventListener('click', function() {
+                const searchTerm = document.getElementById('search-input').value.toLowerCase();
+                filteredData = data.filter(emp => 
+                    emp.company.toLowerCase().includes(searchTerm) ||
+                    emp.department.toLowerCase().includes(searchTerm) ||
+                    (emp.firstname.toLowerCase() + ' ' + emp.lastname.toLowerCase()).includes(searchTerm)
+                );
+                displayData();
+
+                // Ссылка для открытия нужного отдела и выделения сотрудника
+                if (filteredData.length > 0) {
+                    const firstMatch = filteredData[0];
+                    const iframe = document.getElementById('department-frame');
+                    iframe.src = `/department?company=${encodeURIComponent(normalizeCompanyName(firstMatch.company))}&department=${encodeURIComponent(firstMatch.department)}`;
+                    
+                    // Обработка ссылки в department.html
+                    iframe.onload = function() {
+                        const iframeDocument = iframe.contentDocument || iframe.contentWindow.document;
+                        iframeDocument.getElementById('highlight-employee').value = `${firstMatch.firstname} ${firstMatch.lastname}`;
+                    };
+                }
+            });
+
+            document.getElementById('search-input').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    document.getElementById('search-button').click();
+                }
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ department }} - {{ company }}</title>
+    <link rel="stylesheet" href="/static/css/styles.css">
+</head>
+<body>
+    <h1>{{ department }} - {{ company }}</h1>
+    <div id="employee-structure"></div>
+
+    <script>
+        const companyMapping = {
+            "Аэросервис": ["ООО «Аэросервис»", "ООО \"Аэросервис\"", "Аэросервис", "Аэросервис ООО"],
+            "УМ": ["Тион УМ АО", "АО \"Тион УМ\"", "АО Тион УМ", "Тион УМ", "АО «Тион Умный Микроклимат»", "АО \"ТИОН УМ\""],
+            "ХК": ["АО \"ХК Тион\"", "Холдинговая Компания", "ХК Тион АО", "ХК Тион", "АО ХК Тион"],
+            "Инжиниринг": ["ООО Инжиниринг", "Инжиниринг", "Тион Инжиниринг ООО"]
+        };
+
+        function normalizeCompanyName(name) {
+            for (const [normalizedName, variations] of Object.entries(companyMapping)) {
+                if (variations.includes(name)) {
+                    return normalizedName;
+                }
+            }
+            return name;
+        }
+
+        function generateAvatar(name) {
+            let words = name.trim().split(' ');
+            let initials = words.length >= 2 
+                ? words[0].charAt(0).toUpperCase() + words[1].charAt(0).toUpperCase()
+                : words[0].charAt(0).toUpperCase();
+            
+            let canvas = document.createElement('canvas');
+            let context = canvas.getContext('2d');
+            canvas.width = 60;
+            canvas.height = 60;
+            context.fillStyle = '#3f51b5';
+            context.fillRect(0, 0, canvas.width, canvas.height);
+            context.font = 'bold 30px sans-serif';
+            context.fillStyle = 'white';
+            context.textAlign = 'center';
+            context.fillText(initials, canvas.width / 2, canvas.height / 2 + 10);
+            return canvas.toDataURL();
+        }
+
+        document.addEventListener("DOMContentLoaded", function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const company = urlParams.get('company');
+            const department = urlParams.get('department');
+
+            fetch('/api/employees')
+                .then(response => response.json())
+                .then(data => {
+                    const employees = data.filter(emp => normalizeCompanyName(emp.company) === company && emp.department === department);
+
+                    // Группируем сотрудников по их менеджеру
+                    const managerMap = {};
+                    employees.forEach(employee => {
+                        const managerName = employee.manager;
+                        if (!managerMap[managerName]) {
+                            managerMap[managerName] = [];
+                        }
+                        managerMap[managerName].push(employee);
+                    });
+
+                    function renderEmployeeHierarchy(managerName, level = 0) {
+                        const subordinates = managerMap[managerName] || [];
+                        subordinates.forEach(employee => {
+                            const employeeDiv = document.createElement('div');
+                            employeeDiv.className = level === 0 ? 'manager-card' : 'employee-card';
+                            employeeDiv.style.marginLeft = `${level * 40}px`; // Increased spacing
+                            employeeDiv.innerHTML = `
+                                <div class="employee-info">
+                                    <img src="${generateAvatar(employee.firstname + ' ' + employee.lastname)}" alt="Avatar" class="employee-avatar">
+                                    <div>
+                                        <p>${employee.firstname} ${employee.lastname}</p>
+                                        <p>${employee.title}</p>
+                                    </div>
+                                </div>
+                            `;
+                            const container = document.createElement('div');
+                            container.className = 'employee-container';
+                            container.appendChild(employeeDiv);
+                            document.getElementById('employee-structure').appendChild(container);
+
+                            // Рекурсивно отображаем подчинённых
+                            renderEmployeeHierarchy(`${employee.firstname} ${employee.lastname}`, level + 1);
+                        });
+                    }
+
+                    // Определение всех сотрудников, которые не имеют менеджера в этом отделе
+                    employees.forEach(employee => {
+                        if (!employees.some(e => e.firstname + ' ' + e.lastname === employee.manager)) {
+                            renderEmployeeHierarchy(employee.manager, 0);
+                        }
+                    });
+                })
+                .catch(error => console.error('Ошибка загрузки данных:', error));
+        });
+    </script>
+</body>
+</html>

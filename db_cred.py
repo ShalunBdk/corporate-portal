@@ -1,5 +1,0 @@
-dbname="Users"
-user="shalin-ar"
-dbpassword="123QshI098"
-host="localhost"
-port="5432"
