@@ -3,7 +3,6 @@ from flask_caching import Cache
 from requests import post
 import psycopg2
 from psycopg2.extras import RealDictCursor
-from db_cred import *
 import os
 from dotenv import load_dotenv
 from urllib.parse import urlencode

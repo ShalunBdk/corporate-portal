@@ -4,3 +4,5 @@ pytest
 python-dotenv
 flask_caching
 requests
+werkzeug
+urllib
