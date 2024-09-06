@@ -248,11 +248,10 @@ def get_employee_hierarchy_for_department():
             cur.close()
             conn.close()
 
-            if manager:
+            if manager != (None,):
                 manager_fullname = manager[0]
-                print(manager_fullname)
+                print(manager)
                 hierarchy = get_employee_hierarchy_by_manager(manager_fullname)
-                print(hierarchy)
                 return jsonify(hierarchy)
             else:
                 return jsonify({"error": "Manager not found for this department"}), 404
@@ -268,6 +267,7 @@ def get_employee_hierarchy_for_department():
         conn.close()
 
         employee_hierarchy = get_employee_hierarchy()
+        print(employee_hierarchy)
         return jsonify(employee_hierarchy)
 
 @app.route('/api/employees', methods=['GET'])
@@ -363,17 +363,17 @@ def delete_department(id):
     conn.close()
     return jsonify(response)
 
-
-@app.route('/api/employees_hierarchy')
-def employees_hierarchy():
-    hierarchy = get_employee_hierarchy()
-    return jsonify(hierarchy)
-
 @app.route('/')
-def home():
+def index():
     access_token = request.cookies.get('access_token')
     return render_template('index.html', access_token = access_token)
-    
+
+@app.route('/home.html')
+def home():
+    department = request.args.get('department')
+    return render_template('home.html', department=department)
+
+@cache.cached(timeout=300, key_prefix='news')  # Кэшируем запрос на 5 минут    
 @app.route('/api/news')
 def get_news():
     conn = get_db_connection()

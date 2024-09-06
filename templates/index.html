@@ -336,11 +336,8 @@
         function loadStructurePage(company, department) {
             // Проверяем, переданы ли параметры company и department
             let url = 'home.html';
-            if (company && department) {
-                // Если оба параметра переданы, формируем URL с ними
-                url += `?company=${encodeURIComponent(company)}&department=${encodeURIComponent(department)}`;
-            } else if (company) {
-                url += `?company=${encodeURIComponent(company)}`;
+            if (department) {
+                url += `?department=${encodeURIComponent(department)}`;
             }
             
             // Отображаем iframe и скрываем другие элементы
