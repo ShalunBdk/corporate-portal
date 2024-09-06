@@ -16,10 +16,11 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 UPLOAD_FOLDER = os.path.join(BASE_DIR, 'uploads')
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 
-dbname = os.getenv('dbname')
-user = os.getenv('user')
-password = os.getenv('password')
-host = os.getenv('host')
+dbname = os.getenv('DB_NAME')
+user = os.getenv('DB_USER')
+password = os.getenv('DB_PASSWORD')
+host = os.getenv('DB_HOST')
+port = os.getenv('DB_PORT')
 
 client_id = 'b18e232b89424dd7ae7b4d65cab1e070'
 client_secret = '24959c0211e84122b941dbd55ae40eb6'
@@ -39,15 +40,13 @@ def allowed_file(filename):
 
 def get_db_connection():
     conn = psycopg2.connect(
-        f"dbname= {dbname} user={user} password={password} host={host} port=5432"
+        f"dbname= {dbname} user={user} password={password} host={host} port={port}"
     )
     return conn
 
 def get_employee_hierarchy():
     try:
-        conn = psycopg2.connect(
-            f"dbname= {dbname} user={user} password={password} host={host} port=5432"
-        )
+        conn = get_db_connection()
         cur = conn.cursor()
         cur.execute("""
         WITH RECURSIVE employee_hierarchy AS (
@@ -116,9 +115,7 @@ def get_employee_hierarchy():
 
 def get_employee_hierarchy_by_manager(start_fullname, company=None, department=None):
     try:
-        conn = psycopg2.connect(
-            f"dbname= {dbname} user={user} password={password} host={host} port=5432"
-        )
+        conn = get_db_connection()
         cur = conn.cursor()
         cur.execute("""
         WITH RECURSIVE employee_hierarchy AS (
@@ -239,9 +236,7 @@ def get_employee_hierarchy_for_department():
     if(department):
         # Найдём руководителя отдела
         try:
-            conn = psycopg2.connect(
-                f"dbname= {dbname} user={user} password={password} host={host} port=5432"
-            )
+            conn = get_db_connection()
             cur = conn.cursor()
             cur.execute("""
                 SELECT manager
@@ -265,9 +260,7 @@ def get_employee_hierarchy_for_department():
             print("Failed to fetch manager:", e)
             return jsonify({"error": "Internal server error"}), 500
     else:
-        conn = psycopg2.connect(
-            f"dbname= {dbname} user={user} password={password} host={host} port=5432"
-        )
+        conn = get_db_connection()
         cur = conn.cursor()
         cur.execute('SELECT id, firstname, lastname, email, manager, title, company, department, b_day FROM employees;')
         employees = cur.fetchall()
@@ -279,9 +272,7 @@ def get_employee_hierarchy_for_department():
 
 @app.route('/api/employees', methods=['GET'])
 def get_employees():
-    conn = psycopg2.connect(
-        f"dbname= {dbname} user={user} password={password} host={host} port=5432"
-    )
+    conn = get_db_connection()
     cur = conn.cursor()
     cur.execute('SELECT id, firstname, lastname, email, manager, title, company, department, b_day FROM employees;')
     employees = cur.fetchall()
@@ -313,9 +304,7 @@ def save_employee():
     department = data['department']
     manager = data['manager']
 
-    conn = psycopg2.connect(
-        f"dbname= {dbname} user={user} password={password} host={host} port=5432"
-    )
+    conn = get_db_connection()
     cur = conn.cursor()
     cur.execute("UPDATE managers SET manager = %s WHERE department = %s", (manager, department))
     conn.commit()
@@ -387,9 +376,7 @@ def home():
     
 @app.route('/api/news')
 def get_news():
-    conn = psycopg2.connect(
-        f"dbname= {dbname} user={user} password={password} host={host} port=5432"
-    )
+    conn = get_db_connection()
     cur = conn.cursor(cursor_factory=RealDictCursor)
     cur.execute('SELECT * FROM news ORDER BY created_at DESC LIMIT 4;')
     news = cur.fetchall()
@@ -422,9 +409,7 @@ def add_news():
             new_article_data['created_at']
         )
     
-    conn = psycopg2.connect(
-        f"dbname= {dbname} user={user} password={password} host={host} port=5432"
-    )
+    conn = get_db_connection()
     cur = conn.cursor()
     cur.execute("""
         INSERT INTO news (image_url, title, content, created_at, likes)
