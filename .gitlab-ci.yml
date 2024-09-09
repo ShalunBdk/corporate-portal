@@ -28,7 +28,7 @@ test:
   script:
     - cp $ENV_FILE .env
     - pip install -r requirements.txt
-    - python test_app.py
+    - python shalin-portal/test_app.py
 
 # build:
 #   stage: build
