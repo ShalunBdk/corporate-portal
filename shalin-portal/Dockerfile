@@ -1,12 +1,26 @@
-# Выкачиваем из dockerhub образ с python версии 3.9
 FROM python:3.9
-# Устанавливаем рабочую директорию для проекта в контейнере
+
 WORKDIR /shalin-portal
-# Скачиваем/обновляем необходимые библиотеки для проекта 
+
 COPY requirements.txt /shalin-portal
 RUN pip3 install --upgrade pip -r requirements.txt
-# |ВАЖНЫЙ МОМЕНТ| копируем содержимое папки, где находится Dockerfile, 
-# в рабочую директорию контейнера
+
 COPY . /shalin-portal
-# Устанавливаем порт, который будет использоваться для сервера
+
+# Установка cron
+RUN apt-get update && apt-get install -y cron
+
+# Добавить задание в cron для запуска скрипта каждые 6 часов
+RUN echo "0 */6 * * * python /shalin-portal/ADconnect.py" > /etc/cron.d/adconnect-cron
+
+# Настройка прав для cron
+RUN chmod 0644 /etc/cron.d/adconnect-cron
+
+# Добавление задания cron
+RUN crontab /etc/cron.d/adconnect-cron
+
+# Открытие порта 80
 EXPOSE 80
+
+# Запуск cron и сервера Flask
+CMD cron && python app.py

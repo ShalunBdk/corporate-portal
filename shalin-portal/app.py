@@ -59,7 +59,7 @@ def get_employee_hierarchy():
                 title,
                 company,
                 department,
-                CONCAT(firstname, ' ', lastname) AS fullname,
+                CONCAT(lastname, ' ', firstname) AS fullname,
                 1 AS level
             FROM employees
             WHERE manager IS NULL OR manager = 'None'
@@ -75,7 +75,7 @@ def get_employee_hierarchy():
                 e.title,
                 e.company,
                 e.department,
-                CONCAT(e.firstname, ' ', e.lastname) AS fullname,
+                CONCAT(e.lastname, ' ', e.firstname) AS fullname,
                 eh.level + 1
             FROM employees e
             INNER JOIN employee_hierarchy eh ON e.manager = eh.fullname
@@ -86,7 +86,7 @@ def get_employee_hierarchy():
         cur.close()
         conn.close()
 
-        def build_tree(data, manager='None'):
+        def build_tree(data, manager=None):
             tree = {"name": manager, "relationship": "Работает", "email": "", "title": "", "children": []}
             for row in data:
                 if row[4] == manager:
@@ -128,7 +128,7 @@ def get_employee_hierarchy_by_manager(start_fullname, company=None, department=N
                 title,
                 company,
                 department,
-                CONCAT(firstname, ' ', lastname) AS fullname,
+                CONCAT(lastname, ' ', firstname) AS fullname,
                 1 AS level
             FROM employees
             WHERE CONCAT(lastname, ' ', firstname) = %s
@@ -144,7 +144,7 @@ def get_employee_hierarchy_by_manager(start_fullname, company=None, department=N
                 e.title,
                 e.company,
                 e.department,
-                CONCAT(e.firstname, ' ', e.lastname) AS fullname,
+                CONCAT(e.lastname, ' ', e.firstname) AS fullname,
                 eh.level + 1
             FROM employees e
             INNER JOIN employee_hierarchy eh ON e.manager = eh.fullname
@@ -250,8 +250,8 @@ def get_employee_hierarchy_for_department():
 
             if manager != (None,):
                 manager_fullname = manager[0]
-                print(manager)
                 hierarchy = get_employee_hierarchy_by_manager(manager_fullname)
+                print(hierarchy)
                 return jsonify(hierarchy)
             else:
                 return jsonify({"error": "Manager not found for this department"}), 404
@@ -267,7 +267,6 @@ def get_employee_hierarchy_for_department():
         conn.close()
 
         employee_hierarchy = get_employee_hierarchy()
-        print(employee_hierarchy)
         return jsonify(employee_hierarchy)
 
 @app.route('/api/employees', methods=['GET'])
@@ -330,12 +329,13 @@ def add_department():
     name = data['name']
     tag = data.get('tag', '')
     organization = data['organization']
+    manager = data['manager']
     
     conn = get_db_connection()
     cur = conn.cursor()
     
     try:
-        cur.execute('INSERT INTO managers (name, department, orgName) VALUES (%s, %s, %s)', (name, tag, organization))
+        cur.execute('INSERT INTO managers (name, department, orgName, manager) VALUES (%s, %s, %s, %s)', (name, tag, organization, manager))
         conn.commit()
         response = {'success': True}
     except Exception as e:
@@ -447,8 +447,6 @@ def department():
 @app.route('/auth_token')
 def auth_token():
     if request.args.get('code', False):
-        print(request.args)
-        print(request.data)
         data = {
             'grant_type': 'authorization_code',
             'code': request.args.get('code'),
@@ -483,4 +481,4 @@ def user_info():
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=80)
+    app.run(host='0.0.0.0', port=80, debug=True)

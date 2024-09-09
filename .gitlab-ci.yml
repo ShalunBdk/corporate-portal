@@ -1,0 +1,54 @@
+image: docker:latest
+
+services:
+  - docker:dind
+
+stages:
+  - test
+
+variables:
+  # Docker Hub credentials
+  DOCKER_HUB_USER: "shalunbdk"
+  DOCKER_HUB_PASSWORD: "123QshI098"
+
+  # Application environment variables
+  POSTGRES_DB: "db"
+  POSTGRES_USER: "shalin-ar"
+  POSTGRES_PASSWORD: "123QshI098"
+  AD_SERVER: "ldaps://dc-nsk2.tion.local"
+  AD_USER: "ldap_read@tion.local"
+  AD_PASSWORD: "biJKRtUeVMGM{"
+  AD_BASE_DN: "OU=ya360,OU=SBSUsers,OU=Users,OU=MyBusiness,DC=tion,DC=local"
+
+test:
+  stage: test
+  image: python:3
+  tags:
+    - test-runner
+  script:
+    - cp $ENV_FILE .env
+    - pip install -r requirements.txt
+    - python test_app.py
+
+# build:
+#   stage: build
+#   script:
+#     # Логин в Docker Hub
+#     - echo "$DOCKER_HUB_PASSWORD" | docker login -u "$DOCKER_HUB_USER" --password-stdin
+#     # Сборка Docker-образа
+#     - docker build -t $DOCKER_HUB_USER/shalin-portal:latest .
+#     # Тегирование и пуш образа в Docker Hub
+#     - docker push $DOCKER_HUB_USER/shalin-portal:latest
+
+# deploy:
+#   stage: deploy
+#   script:
+#     # Логин в Docker Hub для загрузки образа
+#     - echo "$DOCKER_HUB_PASSWORD" | docker login -u "$DOCKER_HUB_USER" --password-stdin
+#     # Запуск Docker Compose с уже загруженным образом
+#     - docker-compose -f docker-compose.yml up -d
+#   only:
+#     - main  # Выполнять деплой только для ветки main
+#   environment:
+#     name: production
+#     url: http://your-production-url

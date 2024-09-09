@@ -1,6 +1,7 @@
 import psycopg2
 from ldap3 import Server, Connection, ALL
 from dotenv import load_dotenv
+import datetime
 import os
 import sys
 import re
@@ -13,6 +14,9 @@ ad_server = os.getenv('AD_SERVER')
 ad_user = os.getenv('AD_USER')
 ad_password = os.getenv('AD_PASSWORD')
 ad_base_dn = os.getenv('AD_BASE_DN')
+
+if ad_server is None:
+    raise ValueError("AD_SERVER is not set.")
 
 # Данные для подключения к PostgreSQL из .env файла
 db_host = os.getenv('DB_HOST')
@@ -44,6 +48,63 @@ except Exception as e:
 
 # Создание хэш-сета пользователей AD
 ad_users_set = {f"{user.givenName} {user.sn}".lower() for user in ad_users}
+
+try:
+    conn = psycopg2.connect(
+        host=db_host,
+        port=db_port,
+        user=db_user,
+        password=db_password,
+        dbname=db_name
+    )
+
+    cur = conn.cursor()
+
+    # SQL-запросы для создания таблиц
+    create_tables = """
+    CREATE TABLE IF NOT EXISTS employees (
+        id SERIAL PRIMARY KEY,
+        firstname VARCHAR(255) NOT NULL,
+        lastname VARCHAR(255) NOT NULL,
+        email VARCHAR(255) UNIQUE NOT NULL,
+        manager VARCHAR(255),
+        b_day DATE,
+        title VARCHAR(255),
+        company VARCHAR(255),
+        department VARCHAR(255),
+        role VARCHAR(50) DEFAULT 'user',
+        yaid VARCHAR(50)
+    );
+
+    CREATE TABLE IF NOT EXISTS managers (
+        id SERIAL PRIMARY KEY,
+        department VARCHAR(255) NOT NULL,
+        manager VARCHAR(255) NOT NULL,
+        name VARCHAR(255) NOT NULL,
+        orgname VARCHAR(255)
+    );
+
+    CREATE TABLE IF NOT EXISTS news (
+        id SERIAL PRIMARY KEY,
+        image_url TEXT,
+        title VARCHAR(255) NOT NULL,
+        content TEXT NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        likes INT DEFAULT 0
+    );
+    """
+
+    # Выполнение SQL-запросов
+    cur.execute(create_tables)
+    conn.commit()
+
+    # Закрытие соединения
+    cur.close()
+    conn.close()
+except Exception as e:
+    print(f"Ошибка при работе с БД: {e}")
+    sys.exit(1)
+
 
 # Подключение к базе данных PostgreSQL
 try:
@@ -107,7 +168,7 @@ try:
                 # Запись уже существует, выполняем UPDATE
                 update_query = """
                     UPDATE employees 
-                    SET firstname = %s, lastname = %s, b_day = %s, manager = %s, 
+                    SET firstname = %s, lastname = %s, b_day = TO_DATE(%s, 'DD.MM.YYYY'), manager = %s, 
                         email = %s, title = %s, company = %s, department = %s
                     WHERE email = %s
                 """
@@ -116,7 +177,7 @@ try:
                 # Запись не существует, выполняем INSERT
                 insert_query = """
                     INSERT INTO employees (firstname, lastname, b_day, manager, email, title, company, department)
-                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                    VALUES (%s, %s, TO_DATE(%s, 'DD.MM.YYYY'), %s, %s, %s, %s, %s)
                 """
                 cur.execute(insert_query, (first_name, last_name, extension_attr, manager, email, title, company, department))
 
@@ -134,7 +195,7 @@ try:
             # Обновление
             try:
                 cur.execute("""
-                    UPDATE employees SET firstname = %s, lastname = %s, b_day = %s, manager = %s, title = %s, company = %s, department = %s
+                    UPDATE employees SET firstname = %s, lastname = %s, b_day = TO_DATE(%s, 'DD.MM.YYYY'), manager = %s, title = %s, company = %s, department = %s
                     WHERE email = %s
                 """, (first_name, last_name, extension_attr, manager, title, company, department, email))
             except psycopg2.Error as e:
@@ -151,7 +212,7 @@ try:
             try:
                 cur.execute("""
                     INSERT INTO employees (firstname, lastname, b_day, manager, email, title, company, department)
-                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                    VALUES (%s, %s, TO_DATE(%s, 'DD.MM.YYYY'), %s, %s, %s, %s, %s)
                 """, (first_name, last_name, extension_attr, manager, email, title, company, department))
             except psycopg2.Error as e:
                 print(f"Ошибка при вставке пользователя {first_name} {last_name}: {e}")
@@ -167,7 +228,6 @@ try:
     conn_db.commit()  # Фиксация транзакций после успешного выполнения
     cur.close()
     conn_db.close()
-    conn.unbind()
 
     if users_with_errors:
         print("Пользователи с ошибками:")

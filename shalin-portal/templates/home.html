@@ -149,7 +149,6 @@
                     }
                     return response.json();
                 })
-                .then(response => response.json())
                 .then(data => {
                     dTree.init(data, {
                         target: '#tree-container',

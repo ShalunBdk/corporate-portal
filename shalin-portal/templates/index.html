@@ -7,7 +7,7 @@
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script src="https://yastatic.net/s3/passport-sdk/autofill/v1/sdk-suggest-token-with-polyfills-latest.js"></script>
     <link rel="stylesheet" href="/static/style.css">
-    <link rel="stylesheet" href="static/itc-slider.css">
+    <link rel="stylesheet" href="/static/itc-slider.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
     <script src="static/itc-slider.js" defer></script>
     <title>Корпоративный портал</title>
@@ -306,6 +306,7 @@
                     <option value="ХК">ХК</option>
                     <option value="ИНЖ">ИНЖ</option>
                 </select>
+                <select id="employeeSelect"></select>
                 <button onclick="addDepartment()">Добавить</button>
         
                 <h3>Существующие отделы:</h3>
@@ -354,6 +355,7 @@
         function openDepartmentModal() {
             document.getElementById('departmentModal').style.display = 'block';
             document.getElementById('overlay').style.display = 'block';
+            loadEmployees();
             loadDepartments(); // Загрузить текущие отделы
         }
         function closeDepartmentModal() {
@@ -411,6 +413,7 @@
             const departmentName = document.getElementById('newDepartment').value;
             const departmentTag = document.getElementById('newDepartmentTag').value;
             const departmentOrg = document.getElementById('newDepartmentOrg').value;
+            const departmentManager = document.getElementById('employeeSelect').value;
 
             fetch('/api/departments', {
                 method: 'POST',
@@ -420,7 +423,8 @@
                 body: JSON.stringify({
                     name: departmentName,
                     tag: departmentTag,
-                    organization: departmentOrg
+                    organization: departmentOrg,
+                    manager: departmentManager
                 }),
             })
             .then(response => response.json())
