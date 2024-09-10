@@ -20,10 +20,8 @@ variables:
   AD_BASE_DN: "OU=ya360,OU=SBSUsers,OU=Users,OU=MyBusiness,DC=tion,DC=local"
 
 services:
-  - docker:latest
-
-before_script:
-  - echo "$DOCKER_HUB_PASSWORD" | docker login -u "$DOCKER_HUB_USER" --password-stdin
+  - name: docker:latest
+    command: ["-H", "unix:///var/run/docker.sock"]
 
 test:
   stage: test
@@ -40,9 +38,11 @@ build:
   tags:
     - test-runner
   script:
+    # Логин в Docker Hub
+    - echo "$DOCKER_HUB_PASSWORD" | docker login -u "$DOCKER_HUB_USER" --password-stdin
     # Сборка Docker-образа
     - docker build -t $DOCKER_HUB_USER/shalin-portal:latest -f shalin-portal/Dockerfile .
-    # Пуш Docker-образа в Docker Hub
+    # Тегирование и пуш образа в Docker Hub
     - docker push $DOCKER_HUB_USER/shalin-portal:latest
 
 deploy:
@@ -50,6 +50,8 @@ deploy:
   tags:
     - test-runner
   script:
+    # Логин в Docker Hub для загрузки образа
+    - echo "$DOCKER_HUB_PASSWORD" | docker login -u "$DOCKER_HUB_USER" --password-stdin
     # Запуск Docker Compose с уже загруженным образом
     - docker-compose -f docker-compose.yml up -d
   only:
