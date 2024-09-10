@@ -18,7 +18,7 @@ services:
       - "80:80"
     depends_on:
       - db
-    command: sh -c "ls && cd /shalin-portal && ls"
+    command: sh -c "ls /shalin-portal && cd shalin-portal && ls"
   
   db:
     image: postgres:14  # Образ PostgreSQL
