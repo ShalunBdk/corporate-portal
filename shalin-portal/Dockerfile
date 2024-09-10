@@ -24,4 +24,4 @@ RUN chmod 0644 /etc/cron.d/adconnect-cron && crontab /etc/cron.d/adconnect-cron
 EXPOSE 80
 
 # Запускаем cron и Flask приложение
-CMD ["sh", "-c", "cron && python /shalin-portal/app.py"]
+CMD ["sh", "-c", "cron && python /shalin-portal/shalin-portal/app.py"]
