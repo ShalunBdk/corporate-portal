@@ -5,6 +5,8 @@ services:
 
 stages:
   - test
+  - build
+  - deploy
 
 variables:
   # Docker Hub credentials
