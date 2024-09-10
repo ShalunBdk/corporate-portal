@@ -34,6 +34,8 @@ test:
 
 build:
   stage: build
+  tags:
+    - test-runner
   script:
     # Логин в Docker Hub
     - echo "$DOCKER_HUB_PASSWORD" | docker login -u "$DOCKER_HUB_USER" --password-stdin
@@ -44,6 +46,8 @@ build:
 
 deploy:
   stage: deploy
+  tags:
+    - test-runner
   script:
     # Логин в Docker Hub для загрузки образа
     - echo "$DOCKER_HUB_PASSWORD" | docker login -u "$DOCKER_HUB_USER" --password-stdin
