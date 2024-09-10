@@ -30,25 +30,24 @@ test:
     - pip install -r requirements.txt
     - python shalin-portal/test_app.py
 
-# build:
-#   stage: build
-#   script:
-#     # Логин в Docker Hub
-#     - echo "$DOCKER_HUB_PASSWORD" | docker login -u "$DOCKER_HUB_USER" --password-stdin
-#     # Сборка Docker-образа
-#     - docker build -t $DOCKER_HUB_USER/shalin-portal:latest .
-#     # Тегирование и пуш образа в Docker Hub
-#     - docker push $DOCKER_HUB_USER/shalin-portal:latest
+build:
+  stage: build
+  script:
+    # Логин в Docker Hub
+    - echo "$DOCKER_HUB_PASSWORD" | docker login -u "$DOCKER_HUB_USER" --password-stdin
+    # Сборка Docker-образа
+    - docker build -t $DOCKER_HUB_USER/shalin-portal:latest .
+    # Тегирование и пуш образа в Docker Hub
+    - docker push $DOCKER_HUB_USER/shalin-portal:latest
 
-# deploy:
-#   stage: deploy
-#   script:
-#     # Логин в Docker Hub для загрузки образа
-#     - echo "$DOCKER_HUB_PASSWORD" | docker login -u "$DOCKER_HUB_USER" --password-stdin
-#     # Запуск Docker Compose с уже загруженным образом
-#     - docker-compose -f docker-compose.yml up -d
-#   only:
-#     - main  # Выполнять деплой только для ветки main
-#   environment:
-#     name: production
-#     url: http://your-production-url
+deploy:
+  stage: deploy
+  script:
+    # Логин в Docker Hub для загрузки образа
+    - echo "$DOCKER_HUB_PASSWORD" | docker login -u "$DOCKER_HUB_USER" --password-stdin
+    # Запуск Docker Compose с уже загруженным образом
+    - docker-compose -f docker-compose.yml up -d
+  only:
+    - main  # Выполнять деплой только для ветки main
+  environment:
+    name: production
