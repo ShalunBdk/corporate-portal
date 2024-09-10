@@ -1,26 +1,27 @@
+# Используем базовый образ Python
 FROM python:3.9
 
+# Устанавливаем рабочий каталог
 WORKDIR /shalin-portal
 
-COPY requirements.txt /shalin-portal
-RUN pip3 install --upgrade pip -r requirements.txt
+# Копируем файл зависимостей и устанавливаем их
+COPY requirements.txt /shalin-portal/
+RUN pip install --upgrade pip && pip install -r requirements.txt
 
-COPY . /shalin-portal
+# Копируем все файлы проекта в рабочий каталог
+COPY . /shalin-portal/
 
-# Установка cron
+# Устанавливаем cron
 RUN apt-get update && apt-get install -y cron
 
-# Добавить задание в cron для запуска скрипта каждые 6 часов
-RUN echo "0 */6 * * * python /shalin-portal/ADconnect.py" > /etc/cron.d/adconnect-cron
+# Добавляем задание cron для запуска скрипта каждые 6 часов
+RUN echo "0 */6 * * * python /shalin-portal/shalin-portal/ADConnect.py >> /var/log/adconnect.log 2>&1" > /etc/cron.d/adconnect-cron
 
-# Настройка прав для cron
-RUN chmod 0644 /etc/cron.d/adconnect-cron
+# Настраиваем права для cron и добавляем его задание
+RUN chmod 0644 /etc/cron.d/adconnect-cron && crontab /etc/cron.d/adconnect-cron
 
-# Добавление задания cron
-RUN crontab /etc/cron.d/adconnect-cron
-
-# Открытие порта 80
+# Открываем порт 80
 EXPOSE 80
 
-# Запуск cron и сервера Flask
-CMD cron && python app.py
+# Запускаем cron и Flask приложение
+CMD ["sh", "-c", "cron && python /shalin-portal/app.py"]
