@@ -1,8 +1,5 @@
 image: docker:latest
 
-services:
-  - docker:dind
-
 stages:
   - test
   - build
@@ -21,6 +18,10 @@ variables:
   AD_USER: "ldap_read@tion.local"
   AD_PASSWORD: "biJKRtUeVMGM{"
   AD_BASE_DN: "OU=ya360,OU=SBSUsers,OU=Users,OU=MyBusiness,DC=tion,DC=local"
+
+services:
+  - name: docker:latest
+    command: ["-H", "unix:///var/run/docker.sock"]
 
 test:
   stage: test
