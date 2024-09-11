@@ -372,6 +372,42 @@ def index():
 def home():
     department = request.args.get('department')
     return render_template('home.html', department=department)
+  
+@app.route('/api/search')
+def search_employees():
+    search_query = request.args.get('query', '')  # Получаем запрос из параметров URL
+    conn = get_db_connection()
+    cur = conn.cursor()
+    
+    # Используем параметризованный запрос для предотвращения SQL-инъекций
+    cur.execute("""
+        SELECT id, firstname, lastname, email, title, department 
+        FROM employees 
+        WHERE firstname ILIKE %s 
+        OR lastname ILIKE %s 
+        OR email ILIKE %s
+        OR title ILIKE %s
+        OR department ILIKE %s
+    """, (f"%{search_query}%", f"%{search_query}%", f"%{search_query}%", f"%{search_query}%", f"%{search_query}%"))
+    
+    employees = cur.fetchall()
+    cur.close()
+    conn.close()
+    
+    # Преобразуем результат в JSON
+    employees_data = [
+        {
+            'id': emp[0],
+            'firstname': emp[1],
+            'lastname': emp[2],
+            'email': emp[3],
+            'title': emp[4],
+            'department': emp[5],
+        }
+        for emp in employees
+    ]
+    
+    return jsonify(employees_data)
 
 @cache.cached(timeout=300, key_prefix='news')  # Кэшируем запрос на 5 минут    
 @app.route('/api/news')

@@ -101,10 +101,10 @@
         <div class="header-logo">
             <a href="http://localhost:5000/"><img alt="logo" src="/static/logo.png"></a>
         </div>
-        <form action="" method="get" class="header-search">
+        <form action="" method="get" id="searchForm" class="header-search">
             <div class="search">
-            <input type="search" name="search" placeholder="Искать сотрудника, новости, прочее...">
-            <button type="submit" class="material-icons"><img src="static/search_icon.png" style="max-width: 24px;"></button>
+                <input type="search" id="searchInput" name="search" placeholder="Искать сотрудника, новости, прочее...">
+                <button type="submit" class="material-icons"><img src="static/search_icon.png" style="max-width: 24px;"></button>
             </div>
         </form>
         <div class="header-menu">
@@ -252,9 +252,7 @@
                 </div>
             </div>
         </div>
-        <div>
-            Test test
-        </div>
+        <div id="searchResults"></div>
         <footer></footer><!-- @end footer -->
         <!-- Popup окно для добавления новости -->
         <div class="overlay" id="overlay"></div>
@@ -306,7 +304,8 @@
                     <option value="ХК">ХК</option>
                     <option value="ИНЖ">ИНЖ</option>
                 </select>
-                <select id="employeeSelect"></select>
+                <label for="employeeSelectDepartament">Руководитель:</label>
+                <select id="employeeSelectDepartament"></select>
                 <button onclick="addDepartment()">Добавить</button>
         
                 <h3>Существующие отделы:</h3>
@@ -324,15 +323,53 @@
         </div>
         
     </main>
+    <script>
+        document.getElementById('searchForm').addEventListener('submit', function(event) {
+          event.preventDefault();  // Предотвращаем перезагрузку страницы
+          loadSerchResult();
 
+          const query = document.getElementById('searchInput').value;
+          
+          fetch(`/api/search?query=${encodeURIComponent(query)}`)
+            .then(response => response.json())
+            .then(data => {
+              const resultsDiv = document.getElementById('searchResults');
+              resultsDiv.innerHTML = '';  // Очищаем старые результаты
+              
+              if (data.length === 0) {
+                resultsDiv.innerHTML = '<p>Ничего не найдено</p>';
+              } else {
+                data.forEach(emp => {
+                  resultsDiv.innerHTML += `
+                    <div class="search-card">
+                      <div class="search-card__body">
+                        <h3>${emp.firstname} ${emp.lastname}</h3>
+                        <p>Email: ${emp.email}</p>
+                        <p>Должность: ${emp.title}</p>
+                        <p>Отдел: ${emp.department}</p>
+                      </div>
+                    </div>
+                  `;
+                });
+              }
+            });
+        });
+      </script>
     <!-- Scripts -->
     <script>    
         // Функция для загрузки index.html в iframe
         function loadIndexPage() {
             document.getElementById('content-iframe').src = '';
             document.querySelector('.iframe-container').style.display = 'none';
+            document.getElementById('searchResults').style.display = 'none';
             document.querySelector('.content').style.display = 'flex';
             document.querySelector('.news').style.display = 'block';
+        }
+        function loadSerchResult(){
+            document.querySelector('.iframe-container').style.display = 'none';
+            document.querySelector('.content').style.display = 'none';
+            document.querySelector('.news').style.display = 'none';
+            document.getElementById('searchResults').style.display = 'flex';
         }
         function loadStructurePage(company, department) {
             // Проверяем, переданы ли параметры company и department
@@ -355,12 +392,31 @@
         function openDepartmentModal() {
             document.getElementById('departmentModal').style.display = 'block';
             document.getElementById('overlay').style.display = 'block';
-            loadEmployees();
+            loadDepartamentEmployees();
             loadDepartments(); // Загрузить текущие отделы
         }
         function closeDepartmentModal() {
             document.getElementById('departmentModal').style.display = 'none';
             document.getElementById('overlay').style.display = 'none';
+        }
+        function loadDepartamentEmployees() {
+            // AJAX-запрос к Flask для получения списка сотрудников
+            fetch(`/api/employees`)
+                .then(response => response.json())
+                .then(data => {
+                    // Сортировка сотрудников по фамилии
+                    data.sort((a, b) => a.lastname.localeCompare(b.lastname));
+                    
+                    const select = document.getElementById('employeeSelectDepartament');
+                    select.innerHTML = ''; // Очистка старых значений
+
+                    data.forEach(employee => {
+                        const option = document.createElement('option');
+                        option.value = `${employee.lastname} ${employee.firstname}`;
+                        option.textContent = `${employee.lastname} ${employee.firstname}`;
+                        select.appendChild(option);
+                    });
+                });
         }
         function loadDepartments() {
             fetch('/api/departments')
