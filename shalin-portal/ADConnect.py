@@ -14,9 +14,13 @@ load_dotenv(dotenv_path=project_root / '.env')
 
 # Данные для подключения к Active Directory из .env файла
 ad_server = os.getenv('AD_SERVER')
+print(ad_server)
 ad_user = os.getenv('AD_USER')
+print(ad_user)
 ad_password = os.getenv('AD_PASSWORD')
+print(ad_password)
 ad_base_dn = os.getenv('AD_BASE_DN')
+print(ad_base_dn)
 
 if ad_server is None:
     raise ValueError("AD_SERVER is not set.")
