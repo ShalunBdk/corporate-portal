@@ -51,6 +51,7 @@ deploy:
   tags:
     - test-runner
   script:
+    - cp $ENV_FILE shalin-portal/.env
     # Логин в Docker Hub для загрузки образа
     - echo "$DOCKER_HUB_PASSWORD" | docker login -u "$DOCKER_HUB_USER" --password-stdin
     # Запуск Docker Compose с уже загруженным образом
