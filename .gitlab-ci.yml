@@ -6,9 +6,19 @@ stages:
   - deploy
 
 variables:
-  # Docker Hub credentials
-  DOCKER_HUB_USER: "shalunbdk"
-  DOCKER_HUB_PASSWORD: "123QshI098"
+  # Docker Hub credentials (Храните эти переменные в настройках GitLab CI/CD)
+  DOCKER_HUB_USER: "$DOCKER_HUB_USER"
+  DOCKER_HUB_PASSWORD: "$DOCKER_HUB_PASSWORD"
+  DOCKER_IMAGE_NAME: "$DOCKER_HUB_USER/shalin-portal"
+
+  # Application environment variables (Храните чувствительные данные в GitLab CI/CD Variables)
+  POSTGRES_DB: "db"
+  POSTGRES_USER: "$POSTGRES_USER"
+  POSTGRES_PASSWORD: "$POSTGRES_PASSWORD"
+  AD_SERVER: "$AD_SERVER"
+  AD_USER: "$AD_USER"
+  AD_PASSWORD: "$AD_PASSWORD"
+  AD_BASE_DN: "$AD_BASE_DN"
 
 services:
   - name: docker:latest
@@ -32,7 +42,7 @@ build:
     # Логин в Docker Hub
     - echo "$DOCKER_HUB_PASSWORD" | docker login -u "$DOCKER_HUB_USER" --password-stdin
     # Сборка Docker-образа
-    - docker build -t $DOCKER_HUB_USER/shalin-portal:latest -f shalin-portal/Dockerfile .
+    - docker build -t $DOCKER_HUB_USER/shalin-portal:latest -f shalin-portal/Dockerfile ./shalin-portal
     # Тегирование и пуш образа в Docker Hub
     - docker push $DOCKER_HUB_USER/shalin-portal:latest
 
