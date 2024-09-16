@@ -3,16 +3,8 @@ services:
   flask:
     image: shalunbdk/shalin-portal:latest # Использование образа из Docker Hub
     container_name: shalin-portal-flask
-    environment:
-      - PYTHONUNBUFFERED=True
-      - POSTGRES_DB=${DB_NAME}  # Имя базы данных
-      - POSTGRES_USER=${DB_USER}  # Пользователь БД
-      - POSTGRES_PASSWORD=${DB_PASSWORD}  # Пароль пользователя
-      - POSTGRES_HOST=db  # Имя сервиса PostgreSQL
-      - AD_SERVER=${AD_SERVER}
-      - AD_USER=${AD_USER}
-      - AD_PASSWORD=${AD_PASSWORD}
-      - AD_BASE_DN=${AD_BASE_DN}
+    env_file:
+      - .env
     restart: on-failure
     ports:
       - "80:80"
