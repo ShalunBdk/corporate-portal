@@ -66,6 +66,7 @@ try:
     )
 
     cur = conn.cursor()
+    
 
     # SQL-запросы для создания таблиц
     create_tables = """
