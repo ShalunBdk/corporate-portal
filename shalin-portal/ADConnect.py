@@ -1,13 +1,16 @@
 import psycopg2
 from ldap3 import Server, Connection, ALL
 from dotenv import load_dotenv
+from pathlib import Path
 import datetime
 import os
 import sys
 import re
 
+project_root = Path(__file__).resolve().parent.parent
+
 # Загрузка переменных окружения из файла .env
-load_dotenv()
+load_dotenv(dotenv_path=project_root / '.env')
 
 # Данные для подключения к Active Directory из .env файла
 ad_server = os.getenv('AD_SERVER')
