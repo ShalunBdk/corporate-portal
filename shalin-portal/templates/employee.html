@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Информация о сотруднике</title>
+</head>
+<body>
+    <div id="employeeInfo">
+        <!-- Информация о сотруднике будет подгружена через JavaScript -->
+    </div>
+
+    <script>
+        const employeeId = window.location.pathname.split('/').pop();
+
+        fetch(`/api/employee/${employeeId}`)
+          .then(response => response.json())
+          .then(data => {
+            if (data.error) {
+              document.getElementById('employeeInfo').innerHTML = '<p>Сотрудник не найден</p>';
+            } else {
+              document.getElementById('employeeInfo').innerHTML = `
+                <h1>${data.firstname} ${data.lastname}</h1>
+                <p>Email: ${data.email}</p>
+                <p>Должность: ${data.title}</p>
+                <p>Отдел: ${data.department}</p>
+                <p>Дата рождения: ${data.b_day}</p>
+              `;
+            }
+          });
+    </script>
+</body>
+</html>

@@ -340,16 +340,21 @@
                 resultsDiv.innerHTML = '<p>Ничего не найдено</p>';
               } else {
                 data.forEach(emp => {
-                  resultsDiv.innerHTML += `
-                    <div class="search-card">
+                    const card = document.createElement('div');
+                    card.className = 'search-card';
+                    card.addEventListener('click', function() {
+                        window.location.href = `/employee/${emp.id}`;  // Переход на страницу сотрудника
+                    });
+                  card.innerHTML += `
                       <div class="search-card__body">
                         <h3>${emp.firstname} ${emp.lastname}</h3>
                         <p>Email: ${emp.email}</p>
                         <p>Должность: ${emp.title}</p>
                         <p>Отдел: ${emp.department}</p>
                       </div>
-                    </div>
                   `;
+
+                  resultsDiv.appendChild(card);
                 });
               }
             });

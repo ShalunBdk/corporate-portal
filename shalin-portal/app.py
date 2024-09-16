@@ -409,6 +409,39 @@ def search_employees():
     
     return jsonify(employees_data)
 
+@app.route('/api/employee/<int:employee_id>', methods=['GET'])
+def get_employee(employee_id):
+    conn = psycopg2.connect(
+        f"dbname= {dbname} user={user} password={password} host={host} port=5432"
+    )
+    cur = conn.cursor()
+
+    # Выполняем запрос для получения информации о сотруднике
+    cur.execute("""
+        SELECT id, firstname, lastname, email, title, department, b_day 
+        FROM employees 
+        WHERE id = %s
+    """, (employee_id,))
+    
+    employee = cur.fetchone()
+    cur.close()
+    conn.close()
+
+    if employee:
+        employee_data = {
+            'id': employee[0],
+            'firstname': employee[1],
+            'lastname': employee[2],
+            'email': employee[3],
+            'title': employee[4],
+            'department': employee[5],
+            'b_day': employee[6]
+        }
+        return jsonify(employee_data)
+    else:
+        return jsonify({'error': 'Employee not found'}), 404
+
+
 @cache.cached(timeout=300, key_prefix='news')  # Кэшируем запрос на 5 минут    
 @app.route('/api/news')
 def get_news():
@@ -468,6 +501,10 @@ def test_visual():
 @app.route('/test_visual2')
 def test_visual2():
     return render_template('test_visual2.html')
+
+@app.route('/employee/<int:employee_id>')
+def employee_page(employee_id):
+    return render_template('employee.html')
 
 # Убедитесь, что путь к директории соответствует структуре вашего проекта
 @app.route('/department')

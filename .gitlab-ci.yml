@@ -5,20 +5,6 @@ stages:
   - build
   - deploy
 
-variables:
-  # Docker Hub credentials
-  DOCKER_HUB_USER: "shalunbdk"
-  DOCKER_HUB_PASSWORD: "123QshI098"
-
-  # Application environment variables
-  POSTGRES_DB: "db"
-  POSTGRES_USER: "shalin-ar"
-  POSTGRES_PASSWORD: "123QshI098"
-  AD_SERVER: "ldaps://dc-nsk2.tion.local"
-  AD_USER: "ldap_read@tion.local"
-  AD_PASSWORD: "biJKRtUeVMGM{"
-  AD_BASE_DN: "OU=ya360,OU=SBSUsers,OU=Users,OU=MyBusiness,DC=tion,DC=local"
-
 services:
   - name: docker:latest
     command: ["-H", "unix:///var/run/docker.sock"]
