@@ -9,7 +9,6 @@ variables:
   # Docker Hub credentials (Храните эти переменные в настройках GitLab CI/CD)
   DOCKER_HUB_USER: "$DOCKER_HUB_USER"
   DOCKER_HUB_PASSWORD: "$DOCKER_HUB_PASSWORD"
-  DOCKER_IMAGE_NAME: "$DOCKER_HUB_USER/shalin-portal"
 
   # Application environment variables (Храните чувствительные данные в GitLab CI/CD Variables)
   POSTGRES_DB: "db"
@@ -51,7 +50,7 @@ deploy:
   tags:
     - test-runner
   script:
-    - cp $ENV_FILE shalin-portal/.env
+    - cp $ENV_FILE .env
     # Логин в Docker Hub для загрузки образа
     - echo "$DOCKER_HUB_PASSWORD" | docker login -u "$DOCKER_HUB_USER" --password-stdin
     # Запуск Docker Compose с уже загруженным образом

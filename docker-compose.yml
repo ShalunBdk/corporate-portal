@@ -5,9 +5,9 @@ services:
     container_name: shalin-portal-flask
     environment:
       - PYTHONUNBUFFERED=True
-      - POSTGRES_DB=${POSTGRES_DB}  # Имя базы данных
-      - POSTGRES_USER=${POSTGRES_USER}  # Пользователь БД
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}  # Пароль пользователя
+      - POSTGRES_DB=${DB_NAME}  # Имя базы данных
+      - POSTGRES_USER=${DB_USER}  # Пользователь БД
+      - POSTGRES_PASSWORD=${DB_PASSWORD}  # Пароль пользователя
       - POSTGRES_HOST=db  # Имя сервиса PostgreSQL
       - AD_SERVER=${AD_SERVER}
       - AD_USER=${AD_USER}
@@ -24,9 +24,9 @@ services:
     image: postgres:14  # Образ PostgreSQL
     container_name: shalin-portal-db
     environment:
-      - POSTGRES_DB=${POSTGRES_DB}
-      - POSTGRES_USER=${POSTGRES_USER}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${DB_NAME}
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
     volumes:
       - pgdata:/var/lib/postgresql/data  # Хранение данных вне контейнера
     restart: always
