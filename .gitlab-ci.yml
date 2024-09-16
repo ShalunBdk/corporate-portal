@@ -42,9 +42,9 @@ build:
     # Логин в Docker Hub
     - echo "$DOCKER_HUB_PASSWORD" | docker login -u "$DOCKER_HUB_USER" --password-stdin
     # Сборка Docker-образа
-    - docker build -t $DOCKER_IMAGE_NAME:latest -f shalin-portal/Dockerfile .
+    - docker build -t shalunbdk/shalin-portal:latest -f shalin-portal/Dockerfile .
     # Тегирование и пуш образа в Docker Hub
-    - docker push $DOCKER_IMAGE_NAME:latest
+    - docker push shalunbdk/shalin-portal:latest
 
 deploy:
   stage: deploy
