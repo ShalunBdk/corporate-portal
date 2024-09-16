@@ -5,6 +5,11 @@ stages:
   - build
   - deploy
 
+variables:
+  # Docker Hub credentials
+  DOCKER_HUB_USER: "shalunbdk"
+  DOCKER_HUB_PASSWORD: "123QshI098"
+
 services:
   - name: docker:latest
     command: ["-H", "unix:///var/run/docker.sock"]
@@ -24,7 +29,6 @@ build:
   tags:
     - test-runner
   script:
-    - cp $ENV_FILE .env
     # Логин в Docker Hub
     - echo "$DOCKER_HUB_PASSWORD" | docker login -u "$DOCKER_HUB_USER" --password-stdin
     # Сборка Docker-образа
@@ -37,7 +41,6 @@ deploy:
   tags:
     - test-runner
   script:
-    - cp $ENV_FILE .env
     # Логин в Docker Hub для загрузки образа
     - echo "$DOCKER_HUB_PASSWORD" | docker login -u "$DOCKER_HUB_USER" --password-stdin
     # Запуск Docker Compose с уже загруженным образом
