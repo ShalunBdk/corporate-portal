@@ -17,9 +17,9 @@ services:
     image: postgres:14  # Образ PostgreSQL
     container_name: shalin-portal-db
     environment:
-      - POSTGRES_DB: "db"
-      - POSTGRES_USER: "shalin-ar"
-      - POSTGRES_PASSWORD: "123QshI098"
+      - POSTGRES_DB: db
+      - POSTGRES_USER: shalin-ar
+      - POSTGRES_PASSWORD: 123QshI098
     volumes:
       - pgdata:/var/lib/postgresql/data  # Хранение данных вне контейнера
     restart: always
